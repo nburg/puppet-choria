@@ -4,6 +4,7 @@
 class choria::repo (
   Boolean $nightly = false,
   Enum["present", "absent"] $ensure = "present",
+  Optional[String] $key_proxy = undef,
 ) {
   assert_private()
 
@@ -43,6 +44,11 @@ class choria::repo (
     } else {
       $release = 'xenial'
     }
+    if $key_proxy {
+      $apt_options = 'http-proxy=${key_proxy}"'
+    } else {
+      $apt_options = ''
+    }
     apt::source{"choria-release":
       ensure        => $ensure,
       notify_update => true,
@@ -51,8 +57,9 @@ class choria::repo (
       release       => $release,
       repos         => "main",
       key           => {
-        id     => "5921BC1D903D6E0353C985BB9F89253B1E83EA92",
-        source => "https://packagecloud.io/choria/release/gpgkey"
+        id      => "5921BC1D903D6E0353C985BB9F89253B1E83EA92",
+        source  => "https://packagecloud.io/choria/release/gpgkey",
+        options => $apt_options
       },
       before        => Package[$choria::package_name],
     }
